@@ -89,7 +89,7 @@ function getDateString() {
 }
 
 // GitHub raw content URL for template.png
-const GITHUB_TEMPLATE_URL = 'https://raw.githubusercontent.com/CDH-Devs/FACEBOOK-VIDEO-DOWNLOAD-BOT/main/template.png';
+const GITHUB_TEMPLATE_URL = 'https://github.com/CDH-Devs/-News-Template/blob/main/template.png';
 
 // Generate template using Canvas composition (same as bot)
 function generateTemplate() {
