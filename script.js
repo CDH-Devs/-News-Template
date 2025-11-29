@@ -89,7 +89,7 @@ function getDateString() {
 }
 
 // GitHub raw content URL for template.png
-const GITHUB_TEMPLATE_URL = 'https://github.com/CDH-Devs/-News-Template/blob/main/template.png';
+const GITHUB_TEMPLATE_URL = 'https://raw.githubusercontent.com/CDH-Devs/-News-Template/main/template.png';
 
 // Generate template using Canvas composition (same as bot)
 function generateTemplate() {
@@ -142,12 +142,12 @@ function composeTemplate(templateImg, headline) {
     // Draw template background
     ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
 
-    // Draw date box with white background (left side, 220x60)
+    // Draw date box with white background (left side, 220x60 at position 52, 130)
     const dateStr = getDateString();
     ctx.fillStyle = 'white';
     ctx.fillRect(52, 130, 220, 60);
     
-    // Draw date text (right-aligned in box)
+    // Draw date text (right-aligned in box at x=262, y=172)
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 32px Arial';
     ctx.textAlign = 'right';
@@ -159,7 +159,7 @@ function composeTemplate(templateImg, headline) {
     const imageBoxWidth = 920;
     const imageBoxHeight = 520;
     
-    // Calculate cover scaling
+    // Calculate cover scaling (same as bot)
     const imgAspect = uploadedImage.width / uploadedImage.height;
     const boxAspect = imageBoxWidth / imageBoxHeight;
     let drawWidth, drawHeight, drawX, drawY;
@@ -186,7 +186,7 @@ function composeTemplate(templateImg, headline) {
     ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
     ctx.restore();
 
-    // Draw headline text at bottom
+    // Draw headline text at bottom (will draw on template's red footer)
     drawHeadlineText(ctx, headline, canvasWidth);
 
     // Show result
