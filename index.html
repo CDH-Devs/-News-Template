@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LK NEWS Template Creator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 LK NEWS Template Creator</h1>
+            <p>Create professional news templates with your image and headline</p>
+        </div>
+
+        <div class="content">
+            <div class="upload-section">
+                <h2>Step 1: Upload Image</h2>
+                <div class="upload-area" id="uploadArea">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p>Drag image here or click to select</p>
+                    <input type="file" id="imageInput" accept="image/*" hidden>
+                </div>
+                <div id="imagePreview" class="image-preview" style="display:none;">
+                    <img id="previewImg" src="" alt="Preview">
+                    <button type="button" class="btn-small" onclick="clearImage()">Change Image</button>
+                </div>
+            </div>
+
+            <div class="headline-section">
+                <h2>Step 2: Enter Headline</h2>
+                <input type="text" id="headlineInput" placeholder="Enter your news headline (max 100 characters)" maxlength="100">
+                <div class="char-count"><span id="charCount">0</span>/100</div>
+            </div>
+
+            <div class="date-section">
+                <h2>Step 3: Select Date</h2>
+                <input type="date" id="dateInput">
+            </div>
+
+            <button id="generateBtn" class="btn-generate" onclick="generateTemplate()" disabled>
+                Generate Template
+            </button>
+
+            <div id="result" class="result" style="display:none;">
+                <h2>Your News Template</h2>
+                <canvas id="templateCanvas" width="920" height="1000"></canvas>
+                <div class="button-group">
+                    <button class="btn-download" onclick="downloadTemplate()">⬇️ Download Image</button>
+                    <button class="btn-copy" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🚀 LK NEWS Template Creator | Create templates for your news</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
