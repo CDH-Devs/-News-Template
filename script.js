@@ -128,7 +128,7 @@ function generateTemplate() {
         });
 }
 
-// Compose template on canvas (Date and Image are in original positions)
+// Compose template on canvas
 function composeTemplate(templateImg, headline) {
     const canvas = document.getElementById('templateCanvas');
     const ctx = canvas.getContext('2d');
@@ -142,10 +142,8 @@ function composeTemplate(templateImg, headline) {
     // Draw template background (scale to fit)
     ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
 
-    // Draw date box with white background (Original Y-position: 170)
+    // Draw date box (Original Y-position: 170). White fill removed.
     const dateStr = getDateString();
-    ctx.fillStyle = 'white';
-    ctx.fillRect(65, 170, 265, 72); 
     
     // Draw date text (right-aligned in box, Original Y-position: 215)
     ctx.fillStyle = '#333333';
@@ -155,7 +153,7 @@ function composeTemplate(templateImg, headline) {
 
     // Draw user image in image box with cover mode (Original Y-position: 280)
     const imageBoxX = 65;
-    const imageBoxY = 280; // Reverted to original 280
+    const imageBoxY = 280; // Y-position reverted to original
     const imageBoxWidth = 1000;
     const imageBoxHeight = 626;
     
@@ -186,7 +184,7 @@ function composeTemplate(templateImg, headline) {
     ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
     ctx.restore();
 
-    // Draw headline text at bottom (will draw on template's red footer)
+    // Draw headline text at bottom 
     drawHeadlineText(ctx, headline, canvasWidth);
 
     // Show result
@@ -194,7 +192,7 @@ function composeTemplate(templateImg, headline) {
     window.scrollTo(0, document.getElementById('result').offsetTop - 100);
 }
 
-// Fallback if GitHub fetch fails (Date and Image are in original positions)
+// Fallback if GitHub fetch fails
 function composeTemplateFallback(headline) {
     const canvas = document.getElementById('templateCanvas');
     const ctx = canvas.getContext('2d');
@@ -212,9 +210,9 @@ function composeTemplateFallback(headline) {
     ctx.fillStyle = '#003d7a';
     ctx.fillRect(0, 0, canvasWidth, 230);
 
-    // Date box (Original Y-position: 170)
-    ctx.fillStyle = 'white';
-    ctx.fillRect(65, 170, 265, 72);
+    // Date box (Original Y-position: 170). White fill removed.
+    // ctx.fillStyle = 'white';
+    // ctx.fillRect(65, 170, 265, 72); // <--- සුදු පසුබිම ඉවත් කර ඇත.
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
     ctx.textAlign = 'right';
@@ -223,7 +221,7 @@ function composeTemplateFallback(headline) {
 
     // Draw image with cover mode (Original Y-position: 280)
     const imageBoxX = 65;
-    const imageBoxY = 280; // Reverted to original 280
+    const imageBoxY = 280; // Y-position reverted to original
     const imageBoxWidth = 1000;
     const imageBoxHeight = 626;
     
@@ -326,7 +324,8 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
         }
     }
 
-    // Headline Y-position set far down (1050)
+    const newLineHeight = Math.ceil(fontSize * 1.4);
+    // Y-position for headline text start: 1050 (Moved far below the image box)
     let startY = 1050 + fontSize + 20;
 
     for (let i = 0; i < lines.length; i++) {
