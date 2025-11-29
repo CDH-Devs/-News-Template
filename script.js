@@ -101,43 +101,111 @@ function generateTemplate() {
         return;
     }
 
-    const canvas = document.getElementById('templateCanvas');
-    const ctx = canvas.getContext('2d');
+    // Load template.png and draw on canvas
+    const templateImg = new Image();
+    templateImg.crossOrigin = 'anonymous';
+    
+    templateImg.onload = function() {
+        const canvas = document.getElementById('templateCanvas');
+        const ctx = canvas.getContext('2d');
 
-    // Canvas dimensions
-    const canvasWidth = 920;
-    const canvasHeight = 1000;
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+        // Canvas dimensions match template
+        const canvasWidth = 920;
+        const canvasHeight = 1000;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
 
-    // Background (dark)
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        // Draw template background
+        ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
 
-    // Date box (top)
-    const dateBoxHeight = 45;
-    ctx.fillStyle = 'rgba(139, 0, 0, 0.85)';
-    ctx.fillRect(52, 150, 920, dateBoxHeight);
+        // Draw date box with white background (left side)
+        ctx.fillStyle = 'white';
+        ctx.fillRect(52, 130, 220, 60);
 
-    // Draw date text
-    const dateStr = getDateString();
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 28px Arial';
-    ctx.textAlign = 'right';
-    ctx.fillText(dateStr, 900, 180);
+        // Draw date text
+        const dateStr = getDateString();
+        ctx.fillStyle = '#333333';
+        ctx.font = 'bold 32px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(dateStr, 262, 172);
 
-    // Draw image (covers 920x520)
-    const imageBoxY = 195;
-    const imageBoxHeight = 520;
-    ctx.drawImage(uploadedImage, 52, imageBoxY, 920, imageBoxHeight);
+        // Draw image in image box (920x520 filled)
+        const imageBoxX = 52;
+        const imageBoxY = 195;
+        const imageBoxWidth = 920;
+        const imageBoxHeight = 520;
+        
+        // Draw image with fill (cover mode)
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
+        ctx.clip();
+        
+        // Calculate scaling to cover the box
+        const imgAspect = uploadedImage.width / uploadedImage.height;
+        const boxAspect = imageBoxWidth / imageBoxHeight;
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (imgAspect > boxAspect) {
+            drawHeight = imageBoxHeight;
+            drawWidth = drawHeight * imgAspect;
+            drawY = imageBoxY;
+            drawX = imageBoxX - (drawWidth - imageBoxWidth) / 2;
+        } else {
+            drawWidth = imageBoxWidth;
+            drawHeight = drawWidth / imgAspect;
+            drawX = imageBoxX;
+            drawY = imageBoxY - (drawHeight - imageBoxHeight) / 2;
+        }
+        
+        ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
+        ctx.restore();
 
-    // Draw headline text box (bottom)
-    const headlineBoxY = 745;
-    drawHeadlineText(ctx, headline, canvasWidth);
+        // Draw headline text
+        drawHeadlineText(ctx, headline, canvasWidth);
 
-    // Show result
-    document.getElementById('result').style.display = 'block';
-    window.scrollTo(0, document.getElementById('result').offsetTop - 100);
+        // Show result
+        document.getElementById('result').style.display = 'block';
+        window.scrollTo(0, document.getElementById('result').offsetTop - 100);
+    };
+
+    // Load the template image
+    templateImg.src = '../template.png';
+    
+    // Fallback if template fails to load
+    templateImg.onerror = function() {
+        const canvas = document.getElementById('templateCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Canvas dimensions
+        const canvasWidth = 920;
+        const canvasHeight = 1000;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        // Create red background as fallback
+        ctx.fillStyle = '#8b0000';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw date box with white background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(52, 130, 220, 60);
+        ctx.fillStyle = '#333333';
+        ctx.font = 'bold 32px Arial';
+        ctx.textAlign = 'right';
+        const dateStr = getDateString();
+        ctx.fillText(dateStr, 262, 172);
+
+        // Draw image
+        ctx.drawImage(uploadedImage, 52, 195, 920, 520);
+
+        // Draw headline
+        drawHeadlineText(ctx, headline, canvasWidth);
+
+        // Show result
+        document.getElementById('result').style.display = 'block';
+        window.scrollTo(0, document.getElementById('result').offsetTop - 100);
+    };
 }
 
 // Draw headline with automatic sizing and wrapping
