@@ -145,15 +145,15 @@ function composeTemplate(templateImg, headline) {
     // Draw date box with white background (Moved down, left, and narrower)
     const dateStr = getDateString();
     ctx.fillStyle = 'white';
-    // X: 40, Y: 270 (170+100), Width: 190 (265->190)
-    ctx.fillRect(40, 270, 190, 72); 
+    // Y-position is moved down (from 170 to 270)
+    ctx.fillRect(65, 270, 265, 72); 
     
-    // Draw date text (Left-aligned)
+    // Draw date text (right-aligned in box, moved down)
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
-    ctx.textAlign = 'left'; // Changed from 'right'
-    // X: 60, Y: 315 (215+100)
-    ctx.fillText(dateStr, 60, 315);
+    ctx.textAlign = 'right';
+    // Y-position is moved down (from 215 to 315)
+    ctx.fillText(dateStr, 315, 315);
 
     // Draw user image in image box with cover mode (Moved down)
     const imageBoxX = 65;
@@ -188,7 +188,7 @@ function composeTemplate(templateImg, headline) {
     ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
     ctx.restore();
 
-    // Draw headline text at bottom 
+    // Draw headline text at bottom (will draw on template's red footer)
     drawHeadlineText(ctx, headline, canvasWidth);
 
     // Show result
@@ -214,16 +214,16 @@ function composeTemplateFallback(headline) {
     ctx.fillStyle = '#003d7a';
     ctx.fillRect(0, 0, canvasWidth, 230);
 
-    // Date box (Moved down, left, and narrower)
+    // Date box (Moved down)
     ctx.fillStyle = 'white';
-    // X: 40, Y: 270 (170+100), Width: 190 (265->190)
-    ctx.fillRect(40, 270, 190, 72); 
+    // Y-position is moved down (from 170 to 270)
+    ctx.fillRect(65, 270, 265, 72);
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
-    ctx.textAlign = 'left'; // Changed from 'right'
+    ctx.textAlign = 'right';
     const dateStr = getDateString();
-    // X: 60, Y: 315 (215+100)
-    ctx.fillText(dateStr, 60, 315);
+    // Y-position is moved down (from 215 to 315)
+    ctx.fillText(dateStr, 315, 315);
 
     // Draw image with cover mode (Moved down)
     const imageBoxX = 65;
@@ -305,10 +305,11 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
         ctx.font = `bold ${fontSize}px Arial`;
     }
 
-    // Draw lines (Moved down for Instagram size)
+    // Draw lines (moved lower for Instagram size)
     const lineHeight = Math.ceil(fontSize * 1.4);
     const totalHeight = lineHeight * lines.length;
-    let startY = 950 + fontSize + 20;
+    // Removed old startY calculation to use the new adjusted one below
+    // let startY = 950 + fontSize + 20;
 
     // Recalculate if needed
     if (lines.length > 2) {
@@ -334,7 +335,8 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
     }
 
     const newLineHeight = Math.ceil(fontSize * 1.4);
-    startY = 845 + fontSize + 20; // Changed from 745
+    // Y-position for headline text start: 1050 (moved far below the 380+626 image box area)
+    startY = 1050 + fontSize + 20;
 
     for (let i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], canvasWidth / 2, startY + (i * newLineHeight));
