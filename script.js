@@ -142,23 +142,22 @@ function composeTemplate(templateImg, headline) {
     // Draw template background (scale to fit)
     ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
 
-    // Draw date box with white background (left side, moved lower)
+    // Draw date box with white background (Moved down, left, and narrower)
     const dateStr = getDateString();
     ctx.fillStyle = 'white';
-    // Y-position changed from 170 to 270 (170 + 100)
-    ctx.fillRect(65, 270, 265, 72); 
+    // X: 40, Y: 270 (170+100), Width: 190 (265->190)
+    ctx.fillRect(40, 270, 190, 72); 
     
-    // Draw date text (right-aligned in box)
+    // Draw date text (Left-aligned)
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
-    ctx.textAlign = 'right';
-    // Y-position changed from 215 to 315 (215 + 100)
-    ctx.fillText(dateStr, 315, 315);
+    ctx.textAlign = 'left'; // Changed from 'right'
+    // X: 60, Y: 315 (215+100)
+    ctx.fillText(dateStr, 60, 315);
 
-    // Draw user image in image box with cover mode (moved lower)
+    // Draw user image in image box with cover mode (Moved down)
     const imageBoxX = 65;
-    // Y-position changed from 280 to 380 (280 + 100)
-    const imageBoxY = 380; 
+    const imageBoxY = 380; // Changed from 280
     const imageBoxWidth = 1000;
     const imageBoxHeight = 626;
     
@@ -184,13 +183,12 @@ function composeTemplate(templateImg, headline) {
     // Clip to image box and draw
     ctx.save();
     ctx.beginPath();
-    // Y-position changed from 280 to 380 (280 + 100)
-    ctx.rect(imageBoxX, 380, imageBoxWidth, imageBoxHeight); 
+    ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
     ctx.clip();
     ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
     ctx.restore();
 
-    // Draw headline text at bottom (will draw on template's red footer)
+    // Draw headline text at bottom 
     drawHeadlineText(ctx, headline, canvasWidth);
 
     // Show result
@@ -216,21 +214,20 @@ function composeTemplateFallback(headline) {
     ctx.fillStyle = '#003d7a';
     ctx.fillRect(0, 0, canvasWidth, 230);
 
-    // Date box (moved lower)
+    // Date box (Moved down, left, and narrower)
     ctx.fillStyle = 'white';
-    // Y-position changed from 170 to 270 (170 + 100)
-    ctx.fillRect(65, 270, 265, 72); 
+    // X: 40, Y: 270 (170+100), Width: 190 (265->190)
+    ctx.fillRect(40, 270, 190, 72); 
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
-    ctx.textAlign = 'right';
+    ctx.textAlign = 'left'; // Changed from 'right'
     const dateStr = getDateString();
-    // Y-position changed from 215 to 315 (215 + 100)
-    ctx.fillText(dateStr, 315, 315);
+    // X: 60, Y: 315 (215+100)
+    ctx.fillText(dateStr, 60, 315);
 
-    // Draw image with cover mode (moved lower)
+    // Draw image with cover mode (Moved down)
     const imageBoxX = 65;
-    // Y-position changed from 280 to 380 (280 + 100)
-    const imageBoxY = 380; 
+    const imageBoxY = 380; // Changed from 280
     const imageBoxWidth = 1000;
     const imageBoxHeight = 626;
     
@@ -252,8 +249,7 @@ function composeTemplateFallback(headline) {
     
     ctx.save();
     ctx.beginPath();
-    // Y-position changed from 280 to 380 (280 + 100)
-    ctx.rect(imageBoxX, 380, imageBoxWidth, imageBoxHeight); 
+    ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
     ctx.clip();
     ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
     ctx.restore();
@@ -309,7 +305,7 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
         ctx.font = `bold ${fontSize}px Arial`;
     }
 
-    // Draw lines (moved lower for Instagram size)
+    // Draw lines (Moved down for Instagram size)
     const lineHeight = Math.ceil(fontSize * 1.4);
     const totalHeight = lineHeight * lines.length;
     let startY = 950 + fontSize + 20;
@@ -338,8 +334,7 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
     }
 
     const newLineHeight = Math.ceil(fontSize * 1.4);
-    // Y-position changed from 745 to 845 (745 + 100)
-    startY = 845 + fontSize + 20;
+    startY = 845 + fontSize + 20; // Changed from 745
 
     for (let i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], canvasWidth / 2, startY + (i * newLineHeight));
