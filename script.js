@@ -268,9 +268,11 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
     else if (headline.length > 30) fontSize = 44;
     else if (headline.length > 20) fontSize = 52;
 
-    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.font = `bold ${fontSize}px Arial, sans-serif`;
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.letterSpacing = '0px';
 
     // Word wrapping
     const words = headline.split(' ');
