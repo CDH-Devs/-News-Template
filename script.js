@@ -88,7 +88,10 @@ function getDateString() {
     return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
 }
 
-// Generate template
+// GitHub raw content URL for template.png
+const GITHUB_TEMPLATE_URL = 'https://raw.githubusercontent.com/CDH-Devs/FACEBOOK-VIDEO-DOWNLOAD-BOT/main/template.png';
+
+// Generate template using Canvas composition (same as bot)
 function generateTemplate() {
     if (!uploadedImage) {
         alert('Please upload an image');
@@ -101,111 +104,158 @@ function generateTemplate() {
         return;
     }
 
-    // Load template.png and draw on canvas
-    const templateImg = new Image();
-    templateImg.crossOrigin = 'anonymous';
+    // Load template from GitHub
+    fetch(GITHUB_TEMPLATE_URL)
+        .then(response => response.blob())
+        .then(blob => {
+            const templateImg = new Image();
+            templateImg.crossOrigin = 'anonymous';
+            
+            templateImg.onload = function() {
+                composeTemplate(templateImg, headline);
+            };
+            
+            templateImg.onerror = function() {
+                console.error('Failed to load template from GitHub');
+                composeTemplateFallback(headline);
+            };
+            
+            templateImg.src = URL.createObjectURL(blob);
+        })
+        .catch(error => {
+            console.error('Failed to fetch template:', error);
+            composeTemplateFallback(headline);
+        });
+}
+
+// Compose template on canvas (same logic as bot's image-template.js)
+function composeTemplate(templateImg, headline) {
+    const canvas = document.getElementById('templateCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Canvas dimensions
+    const canvasWidth = 920;
+    const canvasHeight = 1000;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    // Draw template background
+    ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
+
+    // Draw date box with white background (left side, 220x60)
+    const dateStr = getDateString();
+    ctx.fillStyle = 'white';
+    ctx.fillRect(52, 130, 220, 60);
     
-    templateImg.onload = function() {
-        const canvas = document.getElementById('templateCanvas');
-        const ctx = canvas.getContext('2d');
+    // Draw date text (right-aligned in box)
+    ctx.fillStyle = '#333333';
+    ctx.font = 'bold 32px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(dateStr, 262, 172);
 
-        // Canvas dimensions match template
-        const canvasWidth = 920;
-        const canvasHeight = 1000;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-
-        // Draw template background
-        ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
-
-        // Draw date box with white background (left side)
-        ctx.fillStyle = 'white';
-        ctx.fillRect(52, 130, 220, 60);
-
-        // Draw date text
-        const dateStr = getDateString();
-        ctx.fillStyle = '#333333';
-        ctx.font = 'bold 32px Arial';
-        ctx.textAlign = 'right';
-        ctx.fillText(dateStr, 262, 172);
-
-        // Draw image in image box (920x520 filled)
-        const imageBoxX = 52;
-        const imageBoxY = 195;
-        const imageBoxWidth = 920;
-        const imageBoxHeight = 520;
-        
-        // Draw image with fill (cover mode)
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
-        ctx.clip();
-        
-        // Calculate scaling to cover the box
-        const imgAspect = uploadedImage.width / uploadedImage.height;
-        const boxAspect = imageBoxWidth / imageBoxHeight;
-        let drawWidth, drawHeight, drawX, drawY;
-        
-        if (imgAspect > boxAspect) {
-            drawHeight = imageBoxHeight;
-            drawWidth = drawHeight * imgAspect;
-            drawY = imageBoxY;
-            drawX = imageBoxX - (drawWidth - imageBoxWidth) / 2;
-        } else {
-            drawWidth = imageBoxWidth;
-            drawHeight = drawWidth / imgAspect;
-            drawX = imageBoxX;
-            drawY = imageBoxY - (drawHeight - imageBoxHeight) / 2;
-        }
-        
-        ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
-        ctx.restore();
-
-        // Draw headline text
-        drawHeadlineText(ctx, headline, canvasWidth);
-
-        // Show result
-        document.getElementById('result').style.display = 'block';
-        window.scrollTo(0, document.getElementById('result').offsetTop - 100);
-    };
-
-    // Load the template image
-    templateImg.src = '../template.png';
+    // Draw user image in image box with cover mode (920x520 at 52, 195)
+    const imageBoxX = 52;
+    const imageBoxY = 195;
+    const imageBoxWidth = 920;
+    const imageBoxHeight = 520;
     
-    // Fallback if template fails to load
-    templateImg.onerror = function() {
-        const canvas = document.getElementById('templateCanvas');
-        const ctx = canvas.getContext('2d');
+    // Calculate cover scaling
+    const imgAspect = uploadedImage.width / uploadedImage.height;
+    const boxAspect = imageBoxWidth / imageBoxHeight;
+    let drawWidth, drawHeight, drawX, drawY;
+    
+    if (imgAspect > boxAspect) {
+        // Image is wider than box - fit height, center horizontally
+        drawHeight = imageBoxHeight;
+        drawWidth = drawHeight * imgAspect;
+        drawY = imageBoxY;
+        drawX = imageBoxX - (drawWidth - imageBoxWidth) / 2;
+    } else {
+        // Image is taller than box - fit width, center vertically
+        drawWidth = imageBoxWidth;
+        drawHeight = drawWidth / imgAspect;
+        drawX = imageBoxX;
+        drawY = imageBoxY - (drawHeight - imageBoxHeight) / 2;
+    }
+    
+    // Clip to image box and draw
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
+    ctx.clip();
+    ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
+    ctx.restore();
 
-        // Canvas dimensions
-        const canvasWidth = 920;
-        const canvasHeight = 1000;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
+    // Draw headline text at bottom
+    drawHeadlineText(ctx, headline, canvasWidth);
 
-        // Create red background as fallback
-        ctx.fillStyle = '#8b0000';
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    // Show result
+    document.getElementById('result').style.display = 'block';
+    window.scrollTo(0, document.getElementById('result').offsetTop - 100);
+}
 
-        // Draw date box with white background
-        ctx.fillStyle = 'white';
-        ctx.fillRect(52, 130, 220, 60);
-        ctx.fillStyle = '#333333';
-        ctx.font = 'bold 32px Arial';
-        ctx.textAlign = 'right';
-        const dateStr = getDateString();
-        ctx.fillText(dateStr, 262, 172);
+// Fallback if GitHub fetch fails
+function composeTemplateFallback(headline) {
+    const canvas = document.getElementById('templateCanvas');
+    const ctx = canvas.getContext('2d');
 
-        // Draw image
-        ctx.drawImage(uploadedImage, 52, 195, 920, 520);
+    const canvasWidth = 920;
+    const canvasHeight = 1000;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
-        // Draw headline
-        drawHeadlineText(ctx, headline, canvasWidth);
+    // Red background (CDH NEWS branding)
+    ctx.fillStyle = '#8b0000';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // Show result
-        document.getElementById('result').style.display = 'block';
-        window.scrollTo(0, document.getElementById('result').offsetTop - 100);
-    };
+    // Blue background for news area
+    ctx.fillStyle = '#003d7a';
+    ctx.fillRect(0, 0, canvasWidth, 190);
+
+    // Date box
+    ctx.fillStyle = 'white';
+    ctx.fillRect(52, 130, 220, 60);
+    ctx.fillStyle = '#333333';
+    ctx.font = 'bold 32px Arial';
+    ctx.textAlign = 'right';
+    const dateStr = getDateString();
+    ctx.fillText(dateStr, 262, 172);
+
+    // Draw image with cover mode
+    const imageBoxX = 52;
+    const imageBoxY = 195;
+    const imageBoxWidth = 920;
+    const imageBoxHeight = 520;
+    
+    const imgAspect = uploadedImage.width / uploadedImage.height;
+    const boxAspect = imageBoxWidth / imageBoxHeight;
+    let drawWidth, drawHeight, drawX, drawY;
+    
+    if (imgAspect > boxAspect) {
+        drawHeight = imageBoxHeight;
+        drawWidth = drawHeight * imgAspect;
+        drawY = imageBoxY;
+        drawX = imageBoxX - (drawWidth - imageBoxWidth) / 2;
+    } else {
+        drawWidth = imageBoxWidth;
+        drawHeight = drawWidth / imgAspect;
+        drawX = imageBoxX;
+        drawY = imageBoxY - (drawHeight - imageBoxHeight) / 2;
+    }
+    
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
+    ctx.clip();
+    ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
+    ctx.restore();
+
+    // Draw headline
+    drawHeadlineText(ctx, headline, canvasWidth);
+
+    // Show result
+    document.getElementById('result').style.display = 'block';
+    window.scrollTo(0, document.getElementById('result').offsetTop - 100);
 }
 
 // Draw headline with automatic sizing and wrapping
