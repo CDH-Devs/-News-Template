@@ -145,17 +145,20 @@ function composeTemplate(templateImg, headline) {
     // Draw date box with white background (left side, moved lower)
     const dateStr = getDateString();
     ctx.fillStyle = 'white';
-    ctx.fillRect(65, 170, 265, 72);
+    // Y-position changed from 170 to 270 (170 + 100)
+    ctx.fillRect(65, 270, 265, 72); 
     
     // Draw date text (right-aligned in box)
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(dateStr, 315, 215);
+    // Y-position changed from 215 to 315 (215 + 100)
+    ctx.fillText(dateStr, 315, 315);
 
     // Draw user image in image box with cover mode (moved lower)
     const imageBoxX = 65;
-    const imageBoxY = 280;
+    // Y-position changed from 280 to 380 (280 + 100)
+    const imageBoxY = 380; 
     const imageBoxWidth = 1000;
     const imageBoxHeight = 626;
     
@@ -181,7 +184,8 @@ function composeTemplate(templateImg, headline) {
     // Clip to image box and draw
     ctx.save();
     ctx.beginPath();
-    ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
+    // Y-position changed from 280 to 380 (280 + 100)
+    ctx.rect(imageBoxX, 380, imageBoxWidth, imageBoxHeight); 
     ctx.clip();
     ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
     ctx.restore();
@@ -214,16 +218,19 @@ function composeTemplateFallback(headline) {
 
     // Date box (moved lower)
     ctx.fillStyle = 'white';
-    ctx.fillRect(65, 170, 265, 72);
+    // Y-position changed from 170 to 270 (170 + 100)
+    ctx.fillRect(65, 270, 265, 72); 
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
     ctx.textAlign = 'right';
     const dateStr = getDateString();
-    ctx.fillText(dateStr, 315, 215);
+    // Y-position changed from 215 to 315 (215 + 100)
+    ctx.fillText(dateStr, 315, 315);
 
     // Draw image with cover mode (moved lower)
     const imageBoxX = 65;
-    const imageBoxY = 280;
+    // Y-position changed from 280 to 380 (280 + 100)
+    const imageBoxY = 380; 
     const imageBoxWidth = 1000;
     const imageBoxHeight = 626;
     
@@ -245,7 +252,8 @@ function composeTemplateFallback(headline) {
     
     ctx.save();
     ctx.beginPath();
-    ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
+    // Y-position changed from 280 to 380 (280 + 100)
+    ctx.rect(imageBoxX, 380, imageBoxWidth, imageBoxHeight); 
     ctx.clip();
     ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
     ctx.restore();
@@ -330,7 +338,8 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
     }
 
     const newLineHeight = Math.ceil(fontSize * 1.4);
-    startY = 745 + fontSize + 20;
+    // Y-position changed from 745 to 845 (745 + 100)
+    startY = 845 + fontSize + 20;
 
     for (let i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], canvasWidth / 2, startY + (i * newLineHeight));
