@@ -128,7 +128,7 @@ function generateTemplate() {
         });
 }
 
-// Compose template on canvas (same logic as bot's image-template.js)
+// Compose template on canvas (Date and Image are in original positions)
 function composeTemplate(templateImg, headline) {
     const canvas = document.getElementById('templateCanvas');
     const ctx = canvas.getContext('2d');
@@ -142,22 +142,20 @@ function composeTemplate(templateImg, headline) {
     // Draw template background (scale to fit)
     ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
 
-    // Draw date box with white background (Moved down, left, and narrower)
+    // Draw date box with white background (Original Y-position: 170)
     const dateStr = getDateString();
     ctx.fillStyle = 'white';
-    // Y-position is moved down (from 170 to 270)
-    ctx.fillRect(65, 270, 265, 72); 
+    ctx.fillRect(65, 170, 265, 72); 
     
-    // Draw date text (right-aligned in box, moved down)
+    // Draw date text (right-aligned in box, Original Y-position: 215)
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
     ctx.textAlign = 'right';
-    // Y-position is moved down (from 215 to 315)
-    ctx.fillText(dateStr, 315, 315);
+    ctx.fillText(dateStr, 315, 215);
 
-    // Draw user image in image box with cover mode (Moved down)
+    // Draw user image in image box with cover mode (Original Y-position: 280)
     const imageBoxX = 65;
-    const imageBoxY = 380; // Changed from 280
+    const imageBoxY = 280; // Reverted to original 280
     const imageBoxWidth = 1000;
     const imageBoxHeight = 626;
     
@@ -196,7 +194,7 @@ function composeTemplate(templateImg, headline) {
     window.scrollTo(0, document.getElementById('result').offsetTop - 100);
 }
 
-// Fallback if GitHub fetch fails
+// Fallback if GitHub fetch fails (Date and Image are in original positions)
 function composeTemplateFallback(headline) {
     const canvas = document.getElementById('templateCanvas');
     const ctx = canvas.getContext('2d');
@@ -214,20 +212,18 @@ function composeTemplateFallback(headline) {
     ctx.fillStyle = '#003d7a';
     ctx.fillRect(0, 0, canvasWidth, 230);
 
-    // Date box (Moved down)
+    // Date box (Original Y-position: 170)
     ctx.fillStyle = 'white';
-    // Y-position is moved down (from 170 to 270)
-    ctx.fillRect(65, 270, 265, 72);
+    ctx.fillRect(65, 170, 265, 72);
     ctx.fillStyle = '#333333';
     ctx.font = 'bold 38px Arial';
     ctx.textAlign = 'right';
     const dateStr = getDateString();
-    // Y-position is moved down (from 215 to 315)
-    ctx.fillText(dateStr, 315, 315);
+    ctx.fillText(dateStr, 315, 215);
 
-    // Draw image with cover mode (Moved down)
+    // Draw image with cover mode (Original Y-position: 280)
     const imageBoxX = 65;
-    const imageBoxY = 380; // Changed from 280
+    const imageBoxY = 280; // Reverted to original 280
     const imageBoxWidth = 1000;
     const imageBoxHeight = 626;
     
@@ -305,12 +301,8 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
         ctx.font = `bold ${fontSize}px Arial`;
     }
 
-    // Draw lines (moved lower for Instagram size)
-    const lineHeight = Math.ceil(fontSize * 1.4);
-    const totalHeight = lineHeight * lines.length;
-    // Removed old startY calculation to use the new adjusted one below
-    // let startY = 950 + fontSize + 20;
-
+    const newLineHeight = Math.ceil(fontSize * 1.4);
+    
     // Recalculate if needed
     if (lines.length > 2) {
         const testMetrics = ctx.measureText(lines[0]);
@@ -334,9 +326,8 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
         }
     }
 
-    const newLineHeight = Math.ceil(fontSize * 1.4);
-    // Y-position for headline text start: 1050 (moved far below the 380+626 image box area)
-    startY = 1050 + fontSize + 20;
+    // Headline Y-position set far down (1050)
+    let startY = 1050 + fontSize + 20;
 
     for (let i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], canvasWidth / 2, startY + (i * newLineHeight));
