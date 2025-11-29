@@ -133,31 +133,31 @@ function composeTemplate(templateImg, headline) {
     const canvas = document.getElementById('templateCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Canvas dimensions
-    const canvasWidth = 920;
-    const canvasHeight = 1000;
+    // Canvas dimensions - Instagram post size (portrait)
+    const canvasWidth = 1080;
+    const canvasHeight = 1350;
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    // Draw template background
+    // Draw template background (scale to fit)
     ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
 
-    // Draw date box with white background (left side, 220x60 at position 52, 130)
+    // Draw date box with white background (left side, moved lower)
     const dateStr = getDateString();
     ctx.fillStyle = 'white';
-    ctx.fillRect(52, 130, 220, 60);
+    ctx.fillRect(65, 170, 265, 72);
     
-    // Draw date text (right-aligned in box at x=262, y=172)
+    // Draw date text (right-aligned in box)
     ctx.fillStyle = '#333333';
-    ctx.font = 'bold 32px Arial';
+    ctx.font = 'bold 38px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(dateStr, 262, 172);
+    ctx.fillText(dateStr, 315, 215);
 
-    // Draw user image in image box with cover mode (920x520 at 52, 195)
-    const imageBoxX = 52;
-    const imageBoxY = 195;
-    const imageBoxWidth = 920;
-    const imageBoxHeight = 520;
+    // Draw user image in image box with cover mode (moved lower)
+    const imageBoxX = 65;
+    const imageBoxY = 280;
+    const imageBoxWidth = 1000;
+    const imageBoxHeight = 626;
     
     // Calculate cover scaling (same as bot)
     const imgAspect = uploadedImage.width / uploadedImage.height;
@@ -199,8 +199,8 @@ function composeTemplateFallback(headline) {
     const canvas = document.getElementById('templateCanvas');
     const ctx = canvas.getContext('2d');
 
-    const canvasWidth = 920;
-    const canvasHeight = 1000;
+    const canvasWidth = 1080;
+    const canvasHeight = 1350;
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
@@ -210,22 +210,22 @@ function composeTemplateFallback(headline) {
 
     // Blue background for news area
     ctx.fillStyle = '#003d7a';
-    ctx.fillRect(0, 0, canvasWidth, 190);
+    ctx.fillRect(0, 0, canvasWidth, 230);
 
-    // Date box
+    // Date box (moved lower)
     ctx.fillStyle = 'white';
-    ctx.fillRect(52, 130, 220, 60);
+    ctx.fillRect(65, 170, 265, 72);
     ctx.fillStyle = '#333333';
-    ctx.font = 'bold 32px Arial';
+    ctx.font = 'bold 38px Arial';
     ctx.textAlign = 'right';
     const dateStr = getDateString();
-    ctx.fillText(dateStr, 262, 172);
+    ctx.fillText(dateStr, 315, 215);
 
-    // Draw image with cover mode
-    const imageBoxX = 52;
-    const imageBoxY = 195;
-    const imageBoxWidth = 920;
-    const imageBoxHeight = 520;
+    // Draw image with cover mode (moved lower)
+    const imageBoxX = 65;
+    const imageBoxY = 280;
+    const imageBoxWidth = 1000;
+    const imageBoxHeight = 626;
     
     const imgAspect = uploadedImage.width / uploadedImage.height;
     const boxAspect = imageBoxWidth / imageBoxHeight;
@@ -260,13 +260,13 @@ function composeTemplateFallback(headline) {
 
 // Draw headline with automatic sizing and wrapping
 function drawHeadlineText(ctx, headline, canvasWidth) {
-    const maxWidth = 860;
-    let fontSize = 56;
+    const maxWidth = 1020;
+    let fontSize = 68;
 
-    if (headline.length > 50) fontSize = 32;
-    else if (headline.length > 40) fontSize = 38;
-    else if (headline.length > 30) fontSize = 44;
-    else if (headline.length > 20) fontSize = 52;
+    if (headline.length > 50) fontSize = 38;
+    else if (headline.length > 40) fontSize = 46;
+    else if (headline.length > 30) fontSize = 53;
+    else if (headline.length > 20) fontSize = 62;
 
     ctx.font = `bold ${fontSize}px Arial, sans-serif`;
     ctx.fillStyle = 'white';
@@ -294,17 +294,17 @@ function drawHeadlineText(ctx, headline, canvasWidth) {
 
     // Adjust font size if too many lines
     if (lines.length > 4) {
-        fontSize = Math.max(24, fontSize - 12);
+        fontSize = Math.max(30, fontSize - 15);
         ctx.font = `bold ${fontSize}px Arial`;
     } else if (lines.length > 2) {
-        fontSize = Math.max(28, fontSize - 6);
+        fontSize = Math.max(35, fontSize - 8);
         ctx.font = `bold ${fontSize}px Arial`;
     }
 
-    // Draw lines
+    // Draw lines (moved lower for Instagram size)
     const lineHeight = Math.ceil(fontSize * 1.4);
     const totalHeight = lineHeight * lines.length;
-    let startY = 745 + fontSize + 20;
+    let startY = 950 + fontSize + 20;
 
     // Recalculate if needed
     if (lines.length > 2) {
