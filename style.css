@@ -185,15 +185,6 @@ h2 {
     border-top: 2px solid #f0f0f0;
 }
 
-/* New clean style for the result message text */
-.result-message {
-    font-size: 24px;
-    font-weight: bold;
-    color: #4CAF50; /* Green for success message */
-    margin-bottom: 20px; 
-}
-
-
 #templateCanvas {
     max-width: 100%;
     height: auto;
