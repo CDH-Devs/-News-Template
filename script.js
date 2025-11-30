@@ -1,66 +1,4 @@
-let uploadedImage = null;
-let selectedDate = null;
-
-// Set today's date as default
 document.getElementById('dateInput').valueAsDate = new Date();
-
-// Upload area drag and drop
-const uploadArea = document.getElementById('uploadArea');
-const imageInput = document.getElementById('imageInput');
-
-uploadArea.addEventListener('click', () => imageInput.click());
-
-uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.classList.add('dragover');
-});
-
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('dragover');
-});
-
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        handleImageUpload(files[0]);
-    }
-});
-
-imageInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-        handleImageUpload(e.target.files[0]);
-    }
-});
-
-// Handle image upload
-function handleImageUpload(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        uploadedImage = new Image();
-        uploadedImage.onload = () => {
-            showImagePreview(e.target.result);
-            checkFormComplete();
-        };
-        uploadedImage.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-}
-
-function showImagePreview(dataUrl) {
-    document.getElementById('previewImg').src = dataUrl;
-    document.getElementById('imagePreview').style.display = 'block';
-    uploadArea.style.display = 'none';
-}
-
-function clearImage() {
-    uploadedImage = null;
-    imageInput.value = '';
-    document.getElementById('imagePreview').style.display = 'none';
-    uploadArea.style.display = 'block';
-    checkFormComplete();
-}
 
 // Update character count
 document.getElementById('headlineInput').addEventListener('input', (e) => {
@@ -70,9 +8,8 @@ document.getElementById('headlineInput').addEventListener('input', (e) => {
 
 // Check if form is complete
 function checkFormComplete() {
-    const hasImage = uploadedImage !== null;
     const hasHeadline = document.getElementById('headlineInput').value.trim().length > 0;
-    document.getElementById('generateBtn').disabled = !(hasImage && hasHeadline);
+    document.getElementById('generateBtn').disabled = !hasHeadline;
 }
 
 // Get date string
@@ -93,11 +30,6 @@ const GITHUB_TEMPLATE_URL = 'https://raw.githubusercontent.com/CDH-Devs/-News-Te
 
 // Generate template using Canvas composition (same as bot)
 function generateTemplate() {
-    if (!uploadedImage) {
-        alert('Please upload an image');
-        return;
-    }
-
     const headline = document.getElementById('headlineInput').value.trim();
     if (!headline) {
         alert('Please enter a headline');
@@ -128,7 +60,7 @@ function generateTemplate() {
         });
 }
 
-// Compose template on canvas
+// Compose template on canvas (same logic as bot's image-template.js)
 function composeTemplate(templateImg, headline) {
     const canvas = document.getElementById('templateCanvas');
     const ctx = canvas.getContext('2d');
@@ -142,50 +74,30 @@ function composeTemplate(templateImg, headline) {
     // Draw template background (scale to fit)
     ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
 
-    // Draw date box (Original Y-position: 170). White fill removed.
+    // Scale factors for Instagram (1080x1350) vs bot standard (920x1000)
+    const scaleX = canvasWidth / 920;
+    const scaleY = canvasHeight / 1000;
+
+    // Draw date box with white background (scaled from bot positioning)
     const dateStr = getDateString();
+    const dateBoxTop = Math.round(200 * scaleY);
+    const dateBoxLeft = Math.round(52 * scaleX);
+    const dateBoxWidth = Math.round(220 * scaleX);
+    const dateBoxHeight = Math.round(60 * scaleY);
+    const dateBoxFontSize = Math.round(32 * scaleX);
     
-    // Draw date text (right-aligned in box, Original Y-position: 215)
+    ctx.fillStyle = 'white';
+    ctx.fillRect(dateBoxLeft, dateBoxTop, dateBoxWidth, dateBoxHeight);
+    
+    // Draw date text (right-aligned in box)
     ctx.fillStyle = '#333333';
-    ctx.font = 'bold 38px Arial';
+    ctx.font = `bold ${dateBoxFontSize}px Arial`;
     ctx.textAlign = 'right';
-    ctx.fillText(dateStr, 315, 215);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(dateStr, dateBoxLeft + dateBoxWidth - 10, dateBoxTop + dateBoxHeight / 2);
 
-    // Draw user image in image box with cover mode (Original Y-position: 280)
-    const imageBoxX = 65;
-    const imageBoxY = 280; // Y-position reverted to original
-    const imageBoxWidth = 1000;
-    const imageBoxHeight = 626;
-    
-    // Calculate cover scaling (same as bot)
-    const imgAspect = uploadedImage.width / uploadedImage.height;
-    const boxAspect = imageBoxWidth / imageBoxHeight;
-    let drawWidth, drawHeight, drawX, drawY;
-    
-    if (imgAspect > boxAspect) {
-        // Image is wider than box - fit height, center horizontally
-        drawHeight = imageBoxHeight;
-        drawWidth = drawHeight * imgAspect;
-        drawY = imageBoxY;
-        drawX = imageBoxX - (drawWidth - imageBoxWidth) / 2;
-    } else {
-        // Image is taller than box - fit width, center vertically
-        drawWidth = imageBoxWidth;
-        drawHeight = drawWidth / imgAspect;
-        drawX = imageBoxX;
-        drawY = imageBoxY - (drawHeight - imageBoxHeight) / 2;
-    }
-    
-    // Clip to image box and draw
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
-    ctx.clip();
-    ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
-    ctx.restore();
-
-    // Draw headline text at bottom 
-    drawHeadlineText(ctx, headline, canvasWidth);
+    // Draw headline (image box disabled - headline only mode)
+    drawHeadlineTextScaled(ctx, headline, canvasWidth, canvasHeight);
 
     // Show result
     document.getElementById('result').style.display = 'block';
@@ -206,130 +118,117 @@ function composeTemplateFallback(headline) {
     ctx.fillStyle = '#8b0000';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // Blue background for news area
-    ctx.fillStyle = '#003d7a';
-    ctx.fillRect(0, 0, canvasWidth, 230);
+    // Header with title
+    ctx.fillStyle = '#CC0000';
+    ctx.fillRect(0, 0, canvasWidth, 150);
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 60px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('CDH NEWS ALERT', canvasWidth / 2, 100);
 
-    // Date box (Original Y-position: 170). White fill removed.
-    // ctx.fillStyle = 'white';
-    // ctx.fillRect(65, 170, 265, 72); // <--- සුදු පසුබිම ඉවත් කර ඇත.
+    // Footer bar
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(0, canvasHeight - 135, canvasWidth, 135);
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 50px Arial';
+    ctx.fillText('CDH NEWS', canvasWidth / 2, canvasHeight - 50);
+
+    // Date box (scaled)
+    const scaleX = canvasWidth / 920;
+    const scaleY = canvasHeight / 1000;
+    const dateBoxTop = Math.round(200 * scaleY);
+    const dateBoxLeft = Math.round(52 * scaleX);
+    const dateBoxWidth = Math.round(220 * scaleX);
+    const dateBoxHeight = Math.round(60 * scaleY);
+    const dateBoxFontSize = Math.round(32 * scaleX);
+    
+    ctx.fillStyle = 'white';
+    ctx.fillRect(dateBoxLeft, dateBoxTop, dateBoxWidth, dateBoxHeight);
     ctx.fillStyle = '#333333';
-    ctx.font = 'bold 38px Arial';
+    ctx.font = `bold ${dateBoxFontSize}px Arial`;
     ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
     const dateStr = getDateString();
-    ctx.fillText(dateStr, 315, 215);
+    ctx.fillText(dateStr, dateBoxLeft + dateBoxWidth - 10, dateBoxTop + dateBoxHeight / 2);
 
-    // Draw image with cover mode (Original Y-position: 280)
-    const imageBoxX = 65;
-    const imageBoxY = 280; // Y-position reverted to original
-    const imageBoxWidth = 1000;
-    const imageBoxHeight = 626;
-    
-    const imgAspect = uploadedImage.width / uploadedImage.height;
-    const boxAspect = imageBoxWidth / imageBoxHeight;
-    let drawWidth, drawHeight, drawX, drawY;
-    
-    if (imgAspect > boxAspect) {
-        drawHeight = imageBoxHeight;
-        drawWidth = drawHeight * imgAspect;
-        drawY = imageBoxY;
-        drawX = imageBoxX - (drawWidth - imageBoxWidth) / 2;
-    } else {
-        drawWidth = imageBoxWidth;
-        drawHeight = drawWidth / imgAspect;
-        drawX = imageBoxX;
-        drawY = imageBoxY - (drawHeight - imageBoxHeight) / 2;
-    }
-    
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(imageBoxX, imageBoxY, imageBoxWidth, imageBoxHeight);
-    ctx.clip();
-    ctx.drawImage(uploadedImage, drawX, drawY, drawWidth, drawHeight);
-    ctx.restore();
-
-    // Draw headline
-    drawHeadlineText(ctx, headline, canvasWidth);
+    // Draw headline (image box disabled)
+    drawHeadlineTextScaled(ctx, headline, canvasWidth, canvasHeight);
 
     // Show result
     document.getElementById('result').style.display = 'block';
     window.scrollTo(0, document.getElementById('result').offsetTop - 100);
 }
 
-// Draw headline with automatic sizing and wrapping
-function drawHeadlineText(ctx, headline, canvasWidth) {
-    const maxWidth = 1020;
-    let fontSize = 68;
-
-    if (headline.length > 50) fontSize = 38;
-    else if (headline.length > 40) fontSize = 46;
-    else if (headline.length > 30) fontSize = 53;
-    else if (headline.length > 20) fontSize = 62;
-
-    ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.letterSpacing = '0px';
-
-    // Word wrapping
-    const words = headline.split(' ');
-    let lines = [];
-    let currentLine = '';
-
-    for (let word of words) {
-        const testLine = currentLine + (currentLine ? ' ' : '') + word;
-        const metrics = ctx.measureText(testLine);
-
-        if (metrics.width > maxWidth && currentLine) {
-            lines.push(currentLine);
-            currentLine = word;
-        } else {
-            currentLine = testLine;
-        }
-    }
-    if (currentLine) lines.push(currentLine);
-
-    // Adjust font size if too many lines
-    if (lines.length > 4) {
-        fontSize = Math.max(30, fontSize - 15);
-        ctx.font = `bold ${fontSize}px Arial`;
-    } else if (lines.length > 2) {
-        fontSize = Math.max(35, fontSize - 8);
-        ctx.font = `bold ${fontSize}px Arial`;
-    }
-
-    const newLineHeight = Math.ceil(fontSize * 1.4);
+// Wrap text helper (same logic as bot)
+function wrapTextHelper(text, fontSize, maxWidth) {
+    const charWidth = fontSize * 0.56;
+    const maxCharsPerLine = Math.floor(maxWidth / charWidth);
+    const hasSpaces = text.includes(' ');
     
-    // Recalculate if needed
-    if (lines.length > 2) {
-        const testMetrics = ctx.measureText(lines[0]);
-        if (testMetrics.width > maxWidth) {
-            // Re-wrap with smaller font
-            fontSize = 40;
-            ctx.font = `bold ${fontSize}px Arial`;
-            lines = [];
-            currentLine = '';
-            for (let word of words) {
-                const testLine = currentLine + (currentLine ? ' ' : '') + word;
-                const metrics = ctx.measureText(testLine);
-                if (metrics.width > maxWidth && currentLine) {
-                    lines.push(currentLine);
-                    currentLine = word;
-                } else {
-                    currentLine = testLine;
-                }
-            }
-            if (currentLine) lines.push(currentLine);
+    if (!hasSpaces && text.length > maxCharsPerLine) {
+        const lines = [];
+        for (let i = 0; i < text.length; i += maxCharsPerLine) {
+            lines.push(text.substring(i, i + maxCharsPerLine));
         }
+        return lines.slice(0, 8);
+    } else {
+        const words = text.split(' ');
+        const lines = [];
+        let line = '';
+        for (const word of words) {
+            const test = line ? line + ' ' + word : word;
+            if (test.length > maxCharsPerLine && line) {
+                lines.push(line);
+                line = word;
+            } else {
+                line = test;
+            }
+        }
+        if (line) lines.push(line);
+        return lines.slice(0, 8);
     }
+}
 
-    const newLineHeight = Math.ceil(fontSize * 1.4);
-    // Y-position for headline text start: 1050 (Moved far below the image box)
-    let startY = 1050 + fontSize + 20;
-
+// Draw headline with automatic sizing and wrapping (same logic as bot)
+function drawHeadlineTextScaled(ctx, headline, canvasWidth, canvasHeight) {
+    const scaleX = canvasWidth / 920;
+    const scaleY = canvasHeight / 1000;
+    
+    // Scaled constraints from bot
+    const maxWidth = 880 * scaleX;
+    const maxHeight = 400 * scaleY;
+    
+    // Start with larger bold font, but ensure it fits based on headline length
+    let fontSize = Math.round(56 * scaleX);
+    if (headline.length > 100) fontSize = Math.round(32 * scaleX);
+    else if (headline.length > 80) fontSize = Math.round(36 * scaleX);
+    else if (headline.length > 60) fontSize = Math.round(40 * scaleX);
+    else if (headline.length > 50) fontSize = Math.round(44 * scaleX);
+    else if (headline.length > 40) fontSize = Math.round(48 * scaleX);
+    else if (headline.length > 30) fontSize = Math.round(52 * scaleX);
+    
+    let lines = wrapTextHelper(headline, fontSize, maxWidth);
+    let finalFontSize = fontSize;
+    
+    // Reduce font if text doesn't fit in headline box
+    while ((lines.length * Math.ceil(finalFontSize * 1.3) + 30) > maxHeight && finalFontSize > Math.round(24 * scaleX)) {
+        finalFontSize -= 2;
+        lines = wrapTextHelper(headline, finalFontSize, maxWidth);
+    }
+    
+    const lineHeight = Math.ceil(finalFontSize * 1.3);
+    const headlineTop = Math.round(420 * scaleY);
+    const headlineLeft = Math.round(50 * scaleX);
+    
+    ctx.fillStyle = 'white';
+    ctx.font = `bold ${finalFontSize}px Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    
+    // Draw each line
     for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], canvasWidth / 2, startY + (i * newLineHeight));
+        const y = headlineTop + (i * lineHeight);
+        ctx.fillText(lines[i], canvasWidth / 2, y);
     }
 }
 
