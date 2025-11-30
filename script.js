@@ -1,3 +1,4 @@
+// API Configuration
 const POSTIMG_API_ENDPOINT = 'https://postimages.org/json/rr';
 const POSTIMG_TOKEN_URL = 'https://postimages.org/';
 
