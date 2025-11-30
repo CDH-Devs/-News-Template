@@ -1,3 +1,6 @@
+const API_BASE_URL = window.location.origin;
+const API_UPLOAD_ENDPOINT = `${API_BASE_URL}/api/upload-template`;
+
 // Set today's date as default
 document.getElementById('dateInput').valueAsDate = new Date();
 
@@ -270,7 +273,7 @@ function generateShareLink() {
     
     canvas.toBlob(async (blob) => {
         try {
-            const response = await fetch('/api/upload-template', {
+            const response = await fetch(API_UPLOAD_ENDPOINT, {
                 method: 'POST',
                 body: blob,
                 headers: {
