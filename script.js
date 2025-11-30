@@ -1,6 +1,31 @@
 const POSTIMG_API_ENDPOINT = 'https://postimages.org/json/rr';
 const POSTIMG_TOKEN_URL = 'https://postimages.org/';
 
+// Auto-fill headline from URL parameter on page load
+window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const headlineParam = params.get('text');
+    
+    if (headlineParam) {
+        try {
+            const decodedHeadline = decodeURIComponent(headlineParam);
+            const headlineInput = document.getElementById('headlineInput');
+            
+            if (headlineInput) {
+                headlineInput.value = decodedHeadline;
+                document.getElementById('charCount').textContent = decodedHeadline.length;
+                
+                // Trigger the template generation
+                generateTemplate();
+                
+                console.log('✅ Headline auto-filled from URL and template generated');
+            }
+        } catch (error) {
+            console.error('Error processing headline parameter:', error);
+        }
+    }
+});
+
 // Auto-generate template on headline input
 document.getElementById('headlineInput').addEventListener('input', (e) => {
     document.getElementById('charCount').textContent = e.target.value.length;
