@@ -1,3 +1,4 @@
+// Set today's date as default
 document.getElementById('dateInput').valueAsDate = new Date();
 
 // Update character count
@@ -258,4 +259,47 @@ async function copyToClipboard() {
     } catch (err) {
         alert('Error copying to clipboard');
     }
+}
+
+// Generate share link
+function generateShareLink() {
+    const canvas = document.getElementById('templateCanvas');
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generating link...';
+    
+    canvas.toBlob(async (blob) => {
+        try {
+            const response = await fetch('/api/upload-template', {
+                method: 'POST',
+                body: blob,
+                headers: {
+                    'Content-Type': 'image/png'
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('shareLink').value = data.link;
+                document.getElementById('linkSection').style.display = 'block';
+                console.log('✅ Share link generated:', data.link);
+            } else {
+                alert('Failed to generate link: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Failed to generate link. Please try again.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔗 Get Share Link';
+        }
+    }, 'image/png');
+}
+
+// Copy share link
+function copyLink() {
+    const input = document.getElementById('shareLink');
+    input.select();
+    document.execCommand('copy');
+    alert('✅ Link copied to clipboard!');
 }
