@@ -1,33 +1,21 @@
-// API Configuration
 const POSTIMG_API_ENDPOINT = 'https://postimages.org/json/rr';
 const POSTIMG_TOKEN_URL = 'https://postimages.org/';
 
-// Set today's date as default
-document.getElementById('dateInput').valueAsDate = new Date();
-
-// Update character count
+// Auto-generate template on headline input
 document.getElementById('headlineInput').addEventListener('input', (e) => {
     document.getElementById('charCount').textContent = e.target.value.length;
-    checkFormComplete();
+    if (e.target.value.trim().length > 0) {
+        generateTemplate();
+    }
 });
 
-// Check if form is complete
-function checkFormComplete() {
-    const hasHeadline = document.getElementById('headlineInput').value.trim().length > 0;
-    document.getElementById('generateBtn').disabled = !hasHeadline;
-}
-
-// Get date string
+// Get date string (auto-generated - today's date)
 function getDateString() {
-    const dateInput = document.getElementById('dateInput').value;
-    if (dateInput) {
-        const date = new Date(dateInput + 'T00:00:00');
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${month}/${day}/${year}`;
-    }
-    return new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    return `${month}/${day}/${year}`;
 }
 
 // GitHub raw content URL for template.png
@@ -37,7 +25,6 @@ const GITHUB_TEMPLATE_URL = 'https://raw.githubusercontent.com/CDH-Devs/-News-Te
 function generateTemplate() {
     const headline = document.getElementById('headlineInput').value.trim();
     if (!headline) {
-        alert('Please enter a headline');
         return;
     }
 
@@ -50,11 +37,15 @@ function generateTemplate() {
             
             templateImg.onload = function() {
                 composeTemplate(templateImg, headline);
+                document.getElementById('result').style.display = 'block';
+                autoUploadToPostimg();
             };
             
             templateImg.onerror = function() {
                 console.error('Failed to load template from GitHub');
                 composeTemplateFallback(headline);
+                document.getElementById('result').style.display = 'block';
+                autoUploadToPostimg();
             };
             
             templateImg.src = URL.createObjectURL(blob);
@@ -62,6 +53,8 @@ function generateTemplate() {
         .catch(error => {
             console.error('Failed to fetch template:', error);
             composeTemplateFallback(headline);
+            document.getElementById('result').style.display = 'block';
+            autoUploadToPostimg();
         });
 }
 
@@ -318,33 +311,31 @@ async function uploadToPostimg(blob) {
     }
 }
 
-// Generate share link
-function generateShareLink() {
+// Auto-upload to postimg after template is generated
+async function autoUploadToPostimg() {
     const canvas = document.getElementById('templateCanvas');
-    const btn = event.target;
-    btn.disabled = true;
-    btn.textContent = '⏳ Uploading to Postimg...';
     
     canvas.toBlob(async (blob) => {
         try {
             const shareUrl = await uploadToPostimg(blob);
-            document.getElementById('shareLink').value = shareUrl;
+            const linkElement = document.getElementById('postimgLink');
+            linkElement.href = shareUrl;
+            linkElement.textContent = shareUrl;
             document.getElementById('linkSection').style.display = 'block';
             console.log('✅ Image hosted on Postimg.cc:', shareUrl);
         } catch (error) {
             console.error('Upload error:', error);
-            alert('Failed to upload image. Please try again.');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = '🔗 Get Share Link';
+            console.error('Could not auto-upload to postimg');
         }
     }, 'image/png');
 }
 
-// Copy share link
-function copyLink() {
-    const input = document.getElementById('shareLink');
-    input.select();
-    document.execCommand('copy');
-    alert('✅ Link copied to clipboard!');
+// Copy postimg link
+function copyPostimgLink() {
+    const link = document.getElementById('postimgLink').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+        alert('✅ Link copied to clipboard!');
+    }).catch(() => {
+        alert('Could not copy link');
+    });
 }
