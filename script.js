@@ -1,5 +1,5 @@
-const API_BASE_URL = window.location.origin;
-const API_UPLOAD_ENDPOINT = `${API_BASE_URL}/api/upload-template`;
+const POSTIMG_API_ENDPOINT = 'https://postimages.org/json/rr';
+const POSTIMG_TOKEN_URL = 'https://postimages.org/';
 
 // Set today's date as default
 document.getElementById('dateInput').valueAsDate = new Date();
@@ -264,34 +264,75 @@ async function copyToClipboard() {
     }
 }
 
+// Get token from postimages.org homepage
+async function getPostimgToken() {
+    try {
+        const response = await fetch(POSTIMG_TOKEN_URL);
+        const html = await response.text();
+        const tokenMatch = html.match(/["']token["']\s*,\s*["'](\w+)["']/);
+        if (tokenMatch && tokenMatch[1]) {
+            return tokenMatch[1];
+        }
+        console.warn('Could not extract token, using default');
+        return 'default';
+    } catch (error) {
+        console.error('Token extraction error:', error);
+        return 'default';
+    }
+}
+
+// Upload image to postimg.cc
+async function uploadToPostimg(blob) {
+    try {
+        const token = await getPostimgToken();
+        const sessionUpload = Date.now().toString().substring(0, 13);
+        const uploadSession = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+        const uploadReferer = 'aHR0cHM6Ly9wb3N0aW1nLmNjLw==';
+        
+        const formData = new FormData();
+        formData.append('file', blob, 'lk-news-template.png');
+        formData.append('token', token);
+        formData.append('expire', '0');
+        formData.append('numfiles', '1');
+        formData.append('optsize', '0');
+        formData.append('session_upload', sessionUpload);
+        formData.append('upload_referer', uploadReferer);
+        formData.append('upload_session', uploadSession);
+        formData.append('adult', '0');
+        
+        const response = await fetch(POSTIMG_API_ENDPOINT, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        if (data.url) {
+            return data.url;
+        } else {
+            throw new Error('No URL in response');
+        }
+    } catch (error) {
+        console.error('Postimg upload error:', error);
+        throw error;
+    }
+}
+
 // Generate share link
 function generateShareLink() {
     const canvas = document.getElementById('templateCanvas');
     const btn = event.target;
     btn.disabled = true;
-    btn.textContent = '⏳ Generating link...';
+    btn.textContent = '⏳ Uploading to Postimg...';
     
     canvas.toBlob(async (blob) => {
         try {
-            const response = await fetch(API_UPLOAD_ENDPOINT, {
-                method: 'POST',
-                body: blob,
-                headers: {
-                    'Content-Type': 'image/png'
-                }
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                document.getElementById('shareLink').value = data.link;
-                document.getElementById('linkSection').style.display = 'block';
-                console.log('✅ Share link generated:', data.link);
-            } else {
-                alert('Failed to generate link: ' + (data.error || 'Unknown error'));
-            }
+            const shareUrl = await uploadToPostimg(blob);
+            document.getElementById('shareLink').value = shareUrl;
+            document.getElementById('linkSection').style.display = 'block';
+            console.log('✅ Image hosted on Postimg.cc:', shareUrl);
         } catch (error) {
             console.error('Upload error:', error);
-            alert('Failed to generate link. Please try again.');
+            alert('Failed to upload image. Please try again.');
         } finally {
             btn.disabled = false;
             btn.textContent = '🔗 Get Share Link';
