@@ -340,17 +340,34 @@ async function uploadToPostimg(blob) {
 async function autoUploadToPostimg() {
     const canvas = document.getElementById('templateCanvas');
     
+    // Always store canvas as data URL for bot fallback
+    const canvasDataUrl = canvas.toDataURL('image/png');
+    document.documentElement.setAttribute('data-canvas-image', canvasDataUrl);
+    
     canvas.toBlob(async (blob) => {
         try {
             const shareUrl = await uploadToPostimg(blob);
             const linkElement = document.getElementById('postimgLink');
             linkElement.href = shareUrl;
             linkElement.textContent = shareUrl;
+            
+            // Store URL in data attribute for easy bot access
+            document.documentElement.setAttribute('data-postimg-url', shareUrl);
+            
+            // Also store in a hidden meta tag for extra reliability
+            let metaTag = document.querySelector('meta[name="postimg-url"]');
+            if (!metaTag) {
+                metaTag = document.createElement('meta');
+                metaTag.name = 'postimg-url';
+                document.head.appendChild(metaTag);
+            }
+            metaTag.content = shareUrl;
+            
             document.getElementById('linkSection').style.display = 'block';
             console.log('✅ Image hosted on Postimg.cc:', shareUrl);
         } catch (error) {
             console.error('Upload error:', error);
-            console.error('Could not auto-upload to postimg');
+            console.error('Could not auto-upload to postimg - will use canvas image fallback');
         }
     }, 'image/png');
 }
